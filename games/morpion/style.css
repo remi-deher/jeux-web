@@ -1,0 +1,62 @@
+.game-main {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 2rem;
+    flex-wrap: wrap;
+}
+
+#morpion-game {
+    text-align: center;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
+    margin: 20px auto;
+    width: 315px;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: var(--surface-color);
+    border: 2px solid var(--primary-variant);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.cell:hover {
+    background-color: #2a2a2a;
+}
+
+.cell.x {
+    color: var(--primary-color);
+}
+.cell.o {
+    color: var(--secondary-color);
+}
+
+#status {
+    font-size: 1.5rem;
+    min-height: 2rem;
+}
+
+#reset-button {
+    margin-top: 1rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}

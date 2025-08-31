@@ -1,7 +1,17 @@
-// public/js/app.js
+// /public/js/app.js
+
+// 1. Déclarer la connexion et un tableau de "callbacks" au niveau global
+let conn;
+window.onWsOpenCallbacks = []; // Fonctions à exécuter quand la connexion est prête
+
 document.addEventListener('DOMContentLoaded', () => {
-    // L'adresse sera 'ws://localhost/ws/' grâce au reverse proxy
-    const conn = new WebSocket('wss://jeux.grandepharmaciebonaparte.fr/ws/'); // Mettre l'adresse du reverse proxy en prod
+    // Détermine le protocole (ws ou wss) et l'URL
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/`;
+
+    console.log(`Tentative de connexion au WebSocket sur : ${wsUrl}`);
+    // 2. Assigner la connexion à la variable globale
+    conn = new WebSocket(wsUrl);
 
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
@@ -9,25 +19,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     conn.onopen = function(e) {
         console.log("Connexion WebSocket établie !");
+        
+        // 3. Quand la connexion est ouverte, exécuter toutes les fonctions en attente
+        window.onWsOpenCallbacks.forEach(callback => callback());
     };
 
     conn.onmessage = function(e) {
         const data = JSON.parse(e.data);
 
+        // Ce onmessage ne gère que le chat et le comptage, le jeu aura le sien
         switch(data.type) {
             case 'player_count_update':
                 updatePlayerCounts(data.counts);
                 break;
             case 'new_chat_message':
-                appendChatMessage(data);
+                // S'assurer que les éléments du chat existent avant de les manipuler
+                if (chatMessages) {
+                    appendChatMessage(data);
+                }
                 break;
         }
     };
+    
+    conn.onerror = function(e) {
+        console.error("Erreur WebSocket observée:", e);
+    };
+
+    conn.onclose = function(e) {
+        console.log("Connexion WebSocket fermée.");
+    };
 
     function updatePlayerCounts(counts) {
-        // Remet à zéro les compteurs affichés
         document.querySelectorAll('.player-count .count').forEach(span => span.textContent = '0');
-
         for (const gameId in counts) {
             const countSpan = document.querySelector(`.player-count[data-game-id='${gameId}'] .count`);
             if (countSpan) {
@@ -40,17 +63,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const msgDiv = document.createElement('div');
         msgDiv.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
         chatMessages.appendChild(msgDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    chatSend.addEventListener('click', () => {
-        const message = chatInput.value;
-        if (message.trim() !== '') {
-            conn.send(JSON.stringify({
-                type: 'chat_message',
-                message: message
-            }));
-            chatInput.value = '';
-        }
-    });
+    // Gérer l'envoi de message du chat
+    if (chatSend) {
+        chatSend.addEventListener('click', () => {
+            const message = chatInput.value;
+            if (message.trim() !== '' && conn.readyState === WebSocket.OPEN) {
+                conn.send(JSON.stringify({ type: 'chat_message', message: message }));
+                chatInput.value = '';
+            }
+        });
+    }
 });
