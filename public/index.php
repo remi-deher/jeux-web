@@ -1,13 +1,34 @@
 <?php
 // public/index.php
+session_start();
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Inclure l'autoloader magique de Composer
+// Autoloader de Composer
 require __DIR__ . '/../vendor/autoload.php';
 
-// Pour l'instant, on appelle directement le contrôleur de l'accueil
-$controller = new App\Controllers\HomeController();
-$controller->index();
+// --- ROUTEUR SIMPLE ---
+$requestUri = strtok($_SERVER["REQUEST_URI"], '?'); // URL sans les paramètres GET
+
+// Définition des routes
+$routes = [
+    '/' => ['App\Controllers\HomeController', 'index'],
+    '/admin/login' => ['App\Controllers\AdminController', 'login'],
+    '/admin/logout' => ['App\Controllers\AdminController', 'logout'],
+    '/admin' => ['App\Controllers\AdminController', 'dashboard'],
+    '/admin/create' => ['App\Controllers\AdminController', 'create'],
+    '/admin/store' => ['App\Controllers\AdminController', 'store'],
+    '/admin/edit' => ['App\Controllers\AdminController', 'edit'],
+    '/admin/update' => ['App\Controllers\AdminController', 'update'],
+    '/admin/delete' => ['App\Controllers\AdminController', 'delete'],
+];
+
+if (array_key_exists($requestUri, $routes)) {
+    $controllerName = $routes[$requestUri][0];
+    $methodName = $routes[$requestUri][1];
+
+    $controller = new $controllerName();
+    $controller->$methodName();
+} else {
+    // Gérer les erreurs 404
+    http_response_code(404);
+    echo "<h1>Page non trouvée (404)</h1>";
+}

@@ -18,6 +18,7 @@
                 <?php endfor; ?>
             </div>
             <button id="reset-button" style="display:none;">Rejouer</button>
+                <a href="/" class="button-link">Retour au menu</a>
         </div>
 
         <aside id="chat-section">

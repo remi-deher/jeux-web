@@ -1,3 +1,4 @@
 composer.phar
 /vendor/
 /config/database.php
+/config/admin.php
