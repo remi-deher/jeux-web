@@ -1,0 +1,12 @@
+{
+    "name": "remi-deher/portail-jeux",
+    "description": "Un portail de jeux en ligne.",
+    "require": {
+        "cboden/ratchet": "^0.4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}

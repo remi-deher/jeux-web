@@ -1,0 +1,242 @@
+/* --- Variables de Couleurs & Thème Général --- */
+:root {
+    --bg-color: #121212; /* Un noir presque pur pour le fond */
+    --surface-color: #1e1e1e; /* Couleur des "surfaces" comme les cartes */
+    --primary-color: #BB86FC; /* Un violet vibrant pour les accents */
+    --primary-variant: #3700B3; /* Un violet plus profond */
+    --secondary-color: #03DAC6; /* Un cyan pour les autres accents */
+    --text-color: #e1e1e1; /* Un blanc cassé pour la lisibilité */
+    --text-color-secondary: #b3b3b3; /* Un gris plus doux pour les descriptions */
+    --border-radius: 12px;
+    --box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- Structure Principale (Header, Main) --- */
+header {
+    padding: 2rem;
+    text-align: center;
+    background-color: var(--surface-color);
+    border-bottom: 2px solid var(--primary-variant);
+}
+
+header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+main {
+    display: flex;
+    flex-wrap: wrap; /* Permet au chat de passer en dessous sur mobile */
+    flex-grow: 1;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+#game-list {
+    flex: 3; /* Prend 3/4 de la largeur */
+    min-width: 300px;
+}
+
+#game-list h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* --- Cartes de Jeux --- */
+.games-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.game-card {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    overflow: hidden; /* Pour que l'image respecte les coins arrondis */
+    box-shadow: var(--box-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid transparent;
+}
+
+.game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 0 25px rgba(187, 134, 252, 0.4);
+    border-color: var(--primary-color);
+}
+
+.game-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover; /* Assure que l'image remplit l'espace sans se déformer */
+}
+
+.game-card h3 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    padding: 1rem 1rem 0.5rem 1rem;
+}
+
+.game-card p {
+    color: var(--text-color-secondary);
+    padding: 0 1rem 1rem 1rem;
+    flex-grow: 1; /* Pousse les infos du bas vers le bas */
+}
+
+.game-info {
+    padding: 1rem;
+    border-top: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.player-count {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.play-button {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    text-decoration: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px; /* Bouton "pilule" */
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.play-button:hover {
+    background-color: var(--secondary-color);
+    transform: scale(1.05);
+}
+
+
+/* --- Section du Chat --- */
+#chat-section {
+    flex: 1; /* Prend 1/4 de la largeur */
+    min-width: 280px;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: 70vh; /* Hauteur fixe pour le chat */
+}
+
+#chat-section h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--secondary-color);
+}
+
+#chat-messages {
+    flex-grow: 1;
+    overflow-y: auto; /* Permet de scroller les messages */
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#chat-messages div {
+    max-width: 90%;
+    word-wrap: break-word;
+}
+
+#chat-messages strong {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+#chat-input {
+    background-color: #333;
+    border: 1px solid #555;
+    color: var(--text-color);
+    padding: 0.75rem;
+    border-radius: 8px;
+    width: 100%;
+    margin-bottom: 0.75rem;
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+}
+
+#chat-send {
+    background-color: var(--secondary-color);
+    color: var(--bg-color);
+    border: none;
+    padding: 0.75rem;
+    width: 100%;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#chat-send:hover {
+    background-color: #05fbe8;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 992px) {
+    main {
+        flex-direction: column;
+    }
+    #chat-section {
+        width: 100%;
+        height: auto; /* Hauteur auto sur mobile */
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+    main {
+        padding: 1rem;
+    }
+}
+
+/* --- Style de la barre de scroll pour un look plus "propre" --- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #2c2c2c;
+}
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
