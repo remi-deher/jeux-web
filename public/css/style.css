@@ -401,7 +401,7 @@ footer {
 
 .p4-col {
     display: flex;
-    flex-direction: column; /* Correction : On affiche les cellules de haut en bas */
+    flex-direction: column; 
     cursor: pointer;
 }
 
@@ -427,11 +427,93 @@ footer {
 }
 
 .p4-token.red {
-    background-color: #dc3545; /* Rouge */
+    background-color: #dc3545;
 }
 
 .p4-token.yellow {
-    background-color: #ffc107; /* Jaune */
+    background-color: #ffc107;
+}
+
+/* --- Styles spécifiques à la Bataille Navale --- */
+#bataille-navale-game #status.my-turn {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.boards-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.bn-board {
+    display: grid;
+    grid-template-columns: repeat(10, 35px);
+    grid-template-rows: repeat(10, 35px);
+    border: 2px solid var(--primary-color);
+}
+
+.bn-board.opponent.my-turn .bn-cell.water:hover {
+    background-color: var(--hover-color);
+    cursor: crosshair;
+}
+
+.bn-board.opponent:not(.my-turn) {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.bn-cell {
+    width: 35px;
+    height: 35px;
+    border: 1px solid #444;
+}
+
+.bn-cell.water { background-color: #1d4d82; }
+.bn-cell.ship { background-color: #8a8a8a; }
+.bn-cell.miss { background-color: #6c757d; }
+.bn-cell.hit { background-color: #dc3545; }
+
+/* Styles pour la prévisualisation du placement */
+.bn-cell.hover-valid {
+    background-color: rgba(3, 218, 198, 0.5);
+}
+
+.bn-cell.hover-invalid {
+    background-color: rgba(220, 53, 69, 0.5);
+}
+
+/* Styles pour la phase de placement */
+.placement-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+.ship-list {
+    display: flex;
+    gap: 0.5rem;
+}
+.ship-item {
+    padding: 0.5rem;
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.ship-item.selected {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+}
+.ship-item.placed {
+    text-decoration: line-through;
+    color: #666;
+    background-color: #222;
+    cursor: not-allowed;
 }
 
 
@@ -458,24 +540,57 @@ footer {
     .navbar {
         padding: 1rem;
     }
-    /* Ajustement pour les plateaux de jeu sur mobile */
-    .p4-cell {
-        width: 45px;
-        height: 45px;
-    }
-    .p4-token {
-        width: 40px;
-        height: 40px;
-    }
+    
+    /* --- AJUSTEMENTS POUR LES PLATEAUX DE JEU SUR MOBILE --- */
+    /* Grille du Morpion */
     #board {
         width: auto;
-        grid-template-columns: repeat(3, 80px);
-        grid-template-rows: repeat(3, 80px);
+        grid-template-columns: repeat(3, 25vw);
+        grid-template-rows: repeat(3, 25vw);
     }
     .cell {
-        width: 80px;
-        height: 80px;
-        font-size: 2.5rem;
+        width: 25vw;
+        height: 25vw;
+        font-size: 10vw;
+    }
+
+    /* Grille du Puissance 4 */
+    .p4-cell {
+        width: 12vw;
+        height: 12vw;
+    }
+    .p4-token {
+        width: 10vw;
+        height: 10vw;
+    }
+
+    /* Grille de la Bataille Navale */
+    .bn-board {
+        grid-template-columns: repeat(10, 8.5vw);
+        grid-template-rows: repeat(10, 8.5vw);
+    }
+    .bn-cell {
+        width: 8.5vw;
+        height: 8.5vw;
+    }
+    
+    /* --- AJUSTEMENTS POUR LA BATAILLE NAVALE SUR MOBILE --- */
+    .placement-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    .ship-list {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+    .ship-item {
+        text-align: center;
+        padding: 0.8rem;
+    }
+    .boards-container {
+        gap: 1rem;
     }
 }
 
@@ -492,82 +607,4 @@ footer {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-color);
-}
-
-/* --- Styles spécifiques à la Bataille Navale --- */
-#bataille-navale-game #status.my-turn {
-    color: var(--secondary-color);
-    font-weight: bold;
-}
-
-.boards-container {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-}
-
-.bn-board {
-    display: grid;
-    grid-template-columns: repeat(10, 35px);
-    grid-template-rows: repeat(10, 35px);
-    border: 2px solid var(--primary-color);
-}
-
-.bn-board.opponent .bn-cell.water:hover {
-    background-color: var(--hover-color);
-    cursor: crosshair;
-}
-
-.bn-cell {
-    width: 35px;
-    height: 35px;
-    border: 1px solid #444;
-}
-
-.bn-cell.water { background-color: #1d4d82; }
-.bn-cell.ship { background-color: #8a8a8a; }
-.bn-cell.miss { background-color: #6c757d; }
-.bn-cell.hit { background-color: #dc3545; }
-
-
-/* Styles pour la phase de placement */
-.placement-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-.ship-list {
-    display: flex;
-    gap: 0.5rem;
-}
-.ship-item {
-    padding: 0.5rem;
-    border: 1px solid var(--primary-color);
-    border-radius: 5px;
-    cursor: pointer;
-}
-.ship-item.selected {
-    background-color: var(--primary-color);
-    color: var(--bg-color);
-}
-.ship-item.placed {
-    text-decoration: line-through;
-    color: #666;
-    background-color: #222;
-    cursor: not-allowed;
-}
-
-@media (max-width: 768px) {
-    .bn-board {
-        grid-template-columns: repeat(10, 28px);
-        grid-template-rows: repeat(10, 28px);
-    }
-    .bn-cell {
-        width: 28px;
-        height: 28px;
-    }
 }
