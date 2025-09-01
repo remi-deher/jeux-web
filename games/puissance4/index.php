@@ -10,7 +10,7 @@
 <body>
     <main class="game-main">
         <div id="puissance4-game">
-            <h1>Puissance 4 en temps réel</h1>
+            <h1>Puissance 4</h1>
             <p id="status">En attente d'un autre joueur...</p>
             <div id="board">
                 <?php for ($i = 0; $i < 7; $i++): ?>

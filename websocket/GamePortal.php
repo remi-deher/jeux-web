@@ -6,6 +6,7 @@ namespace WebSocket;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use WebSocket\Games\MorpionHandler;
+use WebSocket\Games\Puissance4Handler; // Importer la nouvelle classe
 
 class GamePortal implements MessageComponentInterface {
     protected $clients;
@@ -16,8 +17,10 @@ class GamePortal implements MessageComponentInterface {
         $this->clients = new \SplObjectStorage;
         $this->playerCounts = [];
 
+        // On initialise tous les gestionnaires de jeux ici
         $this->gameHandlers = [
-            'morpion' => new MorpionHandler()
+            'morpion' => new MorpionHandler(),
+            'puissance4' => new Puissance4Handler() // Ajouter le nouveau gestionnaire
         ];
         echo "Serveur GamePortal initialisé avec les gestionnaires de jeux.\n";
     }
@@ -31,26 +34,23 @@ class GamePortal implements MessageComponentInterface {
         $data = json_decode($msg, true);
         $type = $data['type'] ?? 'unknown';
 
+        // Si un gestionnaire de jeu existe pour ce type, on lui passe le message
         if (isset($this->gameHandlers[$type])) {
             $this->gameHandlers[$type]->onMessage($from, $data, $this->clients);
             return;
         }
 
+        // Sinon, on gère les messages globaux (chat, etc.)
         switch ($type) {
             case 'heartbeat':
-                // ▼▼▼ CODE MANQUANT RESTAURÉ ▼▼▼
                 $gameId = (int)($data['gameId'] ?? 0);
                 if ($gameId > 0) {
                     if (!isset($this->playerCounts[$gameId])) $this->playerCounts[$gameId] = 0;
                     $this->playerCounts[$gameId]++; 
                 }
-                // On pourrait appeler broadcastPlayerCounts() ici,
-                // mais une gestion par cycle est souvent préférable.
-                // Pour l'instant, laissons-le simple.
                 break;
 
             case 'chat_message':
-                // ▼▼▼ CODE MANQUANT RESTAURÉ ▼▼▼
                 $messageData = [
                     'type' => 'new_chat_message',
                     'user' => 'Joueur' . $from->resourceId,
@@ -69,8 +69,11 @@ class GamePortal implements MessageComponentInterface {
     }
 
     public function onClose(ConnectionInterface $conn) {
+        // Notifier tous les gestionnaires de la déconnexion
         foreach ($this->gameHandlers as $handler) {
-            $handler->onDisconnect($conn, $this->clients);
+            if (method_exists($handler, 'onDisconnect')) {
+                $handler->onDisconnect($conn, $this->clients);
+            }
         }
 
         $this->clients->detach($conn);

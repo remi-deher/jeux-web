@@ -22,16 +22,17 @@ class Puissance4Handler {
         switch ($action) {
             case 'join':
                 $this->handleJoin($from);
+                $this->broadcastState($clients);
                 break;
             case 'move':
                 $this->handleMove($from, $data['columnIndex'] ?? null);
+                $this->broadcastState($clients);
                 break;
             case 'reset':
                 $this->startNewRound();
+                $this->broadcastState($clients);
                 break;
         }
-        
-        $this->broadcastState($clients);
     }
 
     public function onDisconnect(ConnectionInterface $conn, $clients) {
@@ -42,97 +43,117 @@ class Puissance4Handler {
         }
     }
 
+    private function broadcastState($clients) {
+        $payload = json_encode(['type' => 'puissance4_state', 'state' => $this->state]);
+        foreach ($clients as $client) {
+            $client->send($payload);
+        }
+    }
+
     private function fullReset() {
         $this->state = [
-            'board' => array_fill(0, self::ROWS * self::COLS, null),
+            'board' => array_fill(0, self::ROWS, array_fill(0, self::COLS, null)),
             'nextPlayer' => 'red',
             'isGameOver' => false,
             'status' => 'En attente de joueurs...'
         ];
         $this->players = [];
     }
-
+    
     private function startNewRound() {
         if (!$this->state['isGameOver']) return;
-        
-        $this->state['board'] = array_fill(0, self::ROWS * self::COLS, null);
+        $this->state['board'] = array_fill(0, self::ROWS, array_fill(0, self::COLS, null));
         $this->state['nextPlayer'] = 'red';
         $this->state['isGameOver'] = false;
-        $this->state['status'] = 'Nouvelle manche ! Au tour du joueur rouge';
+        $this->state['status'] = 'Nouvelle manche ! Au tour du joueur Rouge';
     }
 
-    private function broadcastState($clients) {
-        $payload = json_encode(['type' => 'puissance4_state', 'state' => $this->state]);
-        foreach ($clients as $client) $client->send($payload);
-    }
-    
     private function handleJoin(ConnectionInterface $conn) {
         if (count($this->players) < 2 && !isset($this->players[$conn->resourceId])) {
             $color = (count($this->players) === 0) ? 'red' : 'yellow';
             $this->players[$conn->resourceId] = $color;
-            echo "Joueur {$conn->resourceId} a rejoint Puissance 4 en tant que {$color}.\n";
+            echo "Le joueur {$conn->resourceId} a rejoint la partie de Puissance 4 en tant que {$color}.\n";
         }
-        
-        if (count($this->players) < 2) {
-            $this->state['status'] = "En attente d'un autre joueur...";
-        } else {
-            $this->state['status'] = "C'est au tour du joueur {$this->state['nextPlayer']}";
+
+        if (count($this->players) === 2) {
+            $this->state['status'] = "C'est au tour du joueur " . ucfirst($this->state['nextPlayer']);
         }
     }
-    
+
     private function handleMove(ConnectionInterface $from, $col) {
-        if ($col === null || $this->state['isGameOver'] || !isset($this->players[$from->resourceId]) || count($this->players) < 2) return;
-        
-        $playerColor = $this->players[$from->resourceId];
-        if ($playerColor !== $this->state['nextPlayer']) return;
+        if ($col === null || $this->state['isGameOver'] || !isset($this->players[$from->resourceId]) || count($this->players) < 2) {
+            return;
+        }
 
-        // Logique de "chute" du jeton
-        for ($row = self::ROWS - 1; $row >= 0; $row--) {
-            $index = $row * self::COLS + $col;
-            if ($this->state['board'][$index] === null) {
-                $this->state['board'][$index] = $playerColor;
-                
-                // Vérifier la victoire
-                if ($this->checkWin($playerColor)) {
-                    $this->state['isGameOver'] = true;
-                    $this->state['status'] = "Le joueur {$playerColor} a gagné !";
-                } elseif (count(array_filter($this->state['board'])) === self::ROWS * self::COLS) {
-                    $this->state['isGameOver'] = true;
-                    $this->state['status'] = "Match nul !";
-                } else {
-                    $this->state['nextPlayer'] = ($playerColor === 'red') ? 'yellow' : 'red';
-                    $this->state['status'] = "C'est au tour du joueur {$this->state['nextPlayer']}";
-                }
-                return; // Le coup a été joué
+        $playerColor = $this->players[$from->resourceId];
+        if ($playerColor !== $this->state['nextPlayer']) {
+            return; // Pas son tour
+        }
+        
+        // Vérifier si la colonne est valide et non pleine
+        if ($col < 0 || $col >= self::COLS || $this->state['board'][0][$col] !== null) {
+            return; // Mouvement invalide
+        }
+
+        // Placer le jeton
+        $row = -1;
+        for ($i = self::ROWS - 1; $i >= 0; $i--) {
+            if ($this->state['board'][$i][$col] === null) {
+                $this->state['board'][$i][$col] = $playerColor;
+                $row = $i;
+                break;
             }
+        }
+
+        // Vérifier la victoire
+        if ($this->checkWin($row, $col, $playerColor)) {
+            $this->state['isGameOver'] = true;
+            $this->state['status'] = "Le joueur " . ucfirst($playerColor) . " a gagné !";
+        } elseif ($this->isBoardFull()) {
+             $this->state['isGameOver'] = true;
+             $this->state['status'] = "Match nul !";
+        } else {
+            $this->state['nextPlayer'] = ($playerColor === 'red') ? 'yellow' : 'red';
+            $this->state['status'] = "C'est au tour du joueur " . ucfirst($this->state['nextPlayer']);
         }
     }
 
-    private function checkWin($player) {
-        // Horizontale
-        for ($r = 0; $r < self::ROWS; $r++) {
-            for ($c = 0; $c <= self::COLS - 4; $c++) {
-                if ($this->state['board'][$r*self::COLS+$c] == $player && $this->state['board'][$r*self::COLS+$c+1] == $player && $this->state['board'][$r*self::COLS+$c+2] == $player && $this->state['board'][$r*self::COLS+$c+3] == $player) return true;
+    private function checkWin($row, $col, $color) {
+        // Horizontal, Vertical, Diagonal (\), Diagonal (/)
+        $directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        foreach ($directions as $dir) {
+            $count = 1;
+            // Vérifier dans une direction
+            for ($i = 1; $i < 4; $i++) {
+                $r = $row + $dir[0] * $i;
+                $c = $col + $dir[1] * $i;
+                if ($r >= 0 && $r < self::ROWS && $c >= 0 && $c < self::COLS && $this->state['board'][$r][$c] === $color) {
+                    $count++;
+                } else {
+                    break;
+                }
             }
-        }
-        // Verticale
-        for ($r = 0; $r <= self::ROWS - 4; $r++) {
-            for ($c = 0; $c < self::COLS; $c++) {
-                if ($this->state['board'][$r*self::COLS+$c] == $player && $this->state['board'][($r+1)*self::COLS+$c] == $player && $this->state['board'][($r+2)*self::COLS+$c] == $player && $this->state['board'][($r+3)*self::COLS+$c] == $player) return true;
+            // Vérifier dans la direction opposée
+            for ($i = 1; $i < 4; $i++) {
+                $r = $row - $dir[0] * $i;
+                $c = $col - $dir[1] * $i;
+                 if ($r >= 0 && $r < self::ROWS && $c >= 0 && $c < self::COLS && $this->state['board'][$r][$c] === $color) {
+                    $count++;
+                } else {
+                    break;
+                }
             }
-        }
-        // Diagonale (descendante)
-        for ($r = 0; $r <= self::ROWS - 4; $r++) {
-            for ($c = 0; $c <= self::COLS - 4; $c++) {
-                if ($this->state['board'][$r*self::COLS+$c] == $player && $this->state['board'][($r+1)*self::COLS+$c+1] == $player && $this->state['board'][($r+2)*self::COLS+$c+2] == $player && $this->state['board'][($r+3)*self::COLS+$c+3] == $player) return true;
-            }
-        }
-        // Diagonale (ascendante)
-        for ($r = 3; $r < self::ROWS; $r++) {
-            for ($c = 0; $c <= self::COLS - 4; $c++) {
-                if ($this->state['board'][$r*self::COLS+$c] == $player && $this->state['board'][($r-1)*self::COLS+$c+1] == $player && $this->state['board'][($r-2)*self::COLS+$c+2] == $player && $this->state['board'][($r-3)*self::COLS+$c+3] == $player) return true;
-            }
+            if ($count >= 4) return true;
         }
         return false;
+    }
+
+    private function isBoardFull() {
+        for ($c = 0; $c < self::COLS; $c++) {
+            if ($this->state['board'][0][$c] === null) {
+                return false;
+            }
+        }
+        return true;
     }
 }
