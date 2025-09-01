@@ -97,15 +97,6 @@ main {
     flex: 3;
 }
 
-footer {
-    text-align: center;
-    padding: 1.5rem;
-    background-color: var(--surface-color);
-    color: var(--text-color-secondary);
-    font-size: 0.9rem;
-    border-top: 1px solid #333;
-}
-
 #game-list {
     flex: 3;
     min-width: 300px;
@@ -320,11 +311,14 @@ footer {
 /* --- Styles spécifiques au jeu Morpion --- */
 #morpion-game-vue {
     text-align: center;
-    padding: 2rem;
+    padding: 2rem 1rem; /* Moins de padding horizontal sur mobile */
     background-color: var(--surface-color);
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #morpion-game-vue h1 {
@@ -339,31 +333,34 @@ footer {
     min-height: 2rem;
 }
 
+/* ▼▼▼ SECTION CORRIGÉE ▼▼▼ */
+/* Le JS va définir la taille, le CSS s'occupe du reste */
 #board {
     display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
+    /* Les colonnes et rangées sont définies par le JS via les styles en ligne */
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
     gap: 5px;
     margin: 20px auto;
-    width: 315px;
     border: 3px solid var(--primary-variant);
     border-radius: 8px;
     overflow: hidden;
 }
 
 .cell {
-    width: 100px;
-    height: 100px;
+    /* La taille est maintenant gérée par le JS */
     background-color: var(--bg-color);
     border: 1px solid var(--primary-variant);
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 3.5rem;
+    font-size: clamp(2rem, 15vw, 4rem); /* Police responsive avec des limites */
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
 }
+/* ▲▲▲ FIN SECTION CORRIGÉE ▲▲▲ */
+
 
 .cell:hover {
     background-color: var(--hover-color);
@@ -592,20 +589,6 @@ footer {
         font-size: 1.2rem; /* Plus lisible */
         padding: 1rem; /* Plus facile à cliquer */
     }
-    
-    /* Grille du Morpion */
-    #board {
-        width: auto;
-        grid-template-columns: repeat(3, 25vw);
-        grid-template-rows: repeat(3, 25vw);
-        max-width: 315px;
-    }
-    .cell {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 1 / 1; /* Garde le carré */
-        font-size: 10vw;
-    }
 
     /* Grille du Puissance 4 */
     .p4-cell {
@@ -704,3 +687,28 @@ footer {
 }
 .red-text { color: #dc3545; }
 .yellow-text { color: #ffc107; }
+
+/* --- Styles pour le Footer --- */
+footer {
+    text-align: center;
+    padding: 2rem; /* Augmentation du padding pour plus d'espace */
+    background-color: var(--surface-color);
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+    border-top: 1px solid #333;
+}
+
+.footer-content p {
+    margin-bottom: 0.5rem; /* Espace entre les lignes */
+}
+
+.footer-content a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-content a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
