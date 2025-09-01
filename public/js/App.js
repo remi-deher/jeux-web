@@ -21,8 +21,17 @@ export default {
                 <Chat />
             </div>
         </main>
+        
         <footer>
-            <p>&copy; {{ new Date().getFullYear() }} Mon Portail de Jeux. Tous droits réservés.</p>
+            <div class="footer-content">
+                <p>Développé par DEHER Rémi &copy; {{ new Date().getFullYear() }} Mon Portail de Jeux. Tous droits réservés.</p>
+                <p>
+                    <span>Projet sous licence MIT.</span> | 
+                    <a href="https://github.com/remi-deher/jeux-web" target="_blank" rel="noopener noreferrer">
+                        Voir le dépôt GitHub
+                    </a>
+                </p>
+            </div>
         </footer>
-    `
+        `
 }
