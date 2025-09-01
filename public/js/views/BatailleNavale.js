@@ -10,7 +10,6 @@ export default {
             myBoard: Array(10).fill(null).map(() => Array(10).fill('water')),
             opponentBoard: Array(10).fill(null).map(() => Array(10).fill('water')),
             
-            // Nouvelle structure pour les navires
             ships: [
                 { name: 'porte-avions', size: 5, placed: false, x: 0, y: 0, orientation: 'horizontal', isValid: true },
                 { name: 'croiseur', size: 4, placed: false, x: 0, y: 1, orientation: 'horizontal', isValid: true },
@@ -19,7 +18,6 @@ export default {
                 { name: 'torpilleur', size: 2, placed: false, x: 0, y: 4, orientation: 'horizontal', isValid: true }
             ],
             
-            // Pour gérer le glisser-déposer
             draggedShipIndex: null,
             draggedOffsetX: 0,
             draggedOffsetY: 0,
@@ -57,12 +55,14 @@ export default {
             this.phase = state.phase;
             this.isMyTurn = state.isMyTurn;
             this.status = state.status;
-            if(this.phase === 'placement') {
-                 // Pour éviter d'écraser le placement local pendant cette phase
-                return;
+            // Uniquement mettre à jour les plateaux si on n'est pas en phase de placement
+            // pour ne pas écraser le travail de l'utilisateur.
+            if(this.phase !== 'placement' && state.myBoard && state.myBoard.length > 0) {
+                this.myBoard = state.myBoard;
             }
-            if (state.myBoard && state.myBoard.length > 0) this.myBoard = state.myBoard;
-            if (state.opponentBoard && state.opponentBoard.length > 0) this.opponentBoard = state.opponentBoard;
+            if (state.opponentBoard && state.opponentBoard.length > 0) {
+                this.opponentBoard = state.opponentBoard;
+            }
         },
 
         getShipCoords(ship) {
@@ -104,7 +104,7 @@ export default {
             ship.placed = true;
             this.validateAllShips();
         },
-
+        
         rotatePlacedShip(shipIndex) {
             const ship = this.ships[shipIndex];
             ship.orientation = (ship.orientation === 'horizontal') ? 'vertical' : 'horizontal';
@@ -141,8 +141,8 @@ export default {
             const boardRect = this.$el.querySelector('.bn-board').getBoundingClientRect();
             const cellWidth = boardRect.width / 10;
             
-            const newX = Math.round((clientX - boardRect.left) / cellWidth - this.draggedOffsetX);
-            const newY = Math.round((clientY - boardRect.top) / cellWidth - this.draggedOffsetY);
+            const newX = Math.round((clientX - boardRect.left) / cellWidth) - this.draggedOffsetX;
+            const newY = Math.round((clientY - boardRect.top) / cellWidth) - this.draggedOffsetY;
             
             const ship = this.ships[this.draggedShipIndex];
             if (ship.x !== newX || ship.y !== newY) {
@@ -212,7 +212,7 @@ export default {
                     <div>
                         <h3>Mon Plateau</h3>
                         <div class="bn-board placement-board">
-                            <div v-for="i in 100" class="bn-cell water"></div>
+                             <div v-for="i in 100" class="bn-cell water"></div>
                             <template v-for="(ship, index) in ships">
                                 <div v-if="ship.placed"
                                      class="placed-ship"
@@ -223,10 +223,10 @@ export default {
                                          width: (ship.orientation === 'horizontal' ? ship.size * 10 : 10) + '%',
                                          height: (ship.orientation === 'vertical' ? ship.size * 10 : 10) + '%'
                                      }"
-                                     @click="rotatePlacedShip(index)"
+                                     @click.stop="rotatePlacedShip(index)"
                                      @mousedown.prevent="startDrag($event, index)"
                                      @touchstart.prevent="startDrag($event, index)">
-                                     <span>{{ ship.name }}</span>
+                                     <span class="ship-name-on-grid">{{ ship.name }}</span>
                                 </div>
                             </template>
                         </div>
