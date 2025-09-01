@@ -6,7 +6,8 @@ namespace WebSocket;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use WebSocket\Games\MorpionHandler;
-use WebSocket\Games\Puissance4Handler; // Importer la nouvelle classe
+use WebSocket\Games\Puissance4Handler;
+use WebSocket\Games\BatailleNavaleHandler;
 
 class GamePortal implements MessageComponentInterface {
     protected $clients;
@@ -20,8 +21,9 @@ class GamePortal implements MessageComponentInterface {
         // On initialise tous les gestionnaires de jeux ici
         $this->gameHandlers = [
             'morpion' => new MorpionHandler(),
-            'puissance4' => new Puissance4Handler() // Ajouter le nouveau gestionnaire
-        ];
+            'puissance4' => new Puissance4Handler(),
+            'bataille_navale' => new BatailleNavaleHandler()
+];
         echo "Serveur GamePortal initialisé avec les gestionnaires de jeux.\n";
     }
 

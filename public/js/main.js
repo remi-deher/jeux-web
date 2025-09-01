@@ -4,11 +4,13 @@ import App from './App.js';
 import Home from './views/Home.js';
 import Morpion from './views/Morpion.js';
 import Puissance4 from './views/Puissance4.js';
+import BatailleNavale from './views/BatailleNavale.js';
 
 const routes = [
     { path: '/', component: Home },
     { path: '/games/morpion', component: Morpion },
     { path: '/games/puissance4', component: Puissance4 },
+    { path: '/games/bataille-navale', component: BatailleNavale },
 ];
 
 const router = VueRouter.createRouter({

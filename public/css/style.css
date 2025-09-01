@@ -494,14 +494,80 @@ footer {
   background: var(--secondary-color);
 }
 
+/* --- Styles spécifiques à la Bataille Navale --- */
+#bataille-navale-game #status.my-turn {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.boards-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.bn-board {
+    display: grid;
+    grid-template-columns: repeat(10, 35px);
+    grid-template-rows: repeat(10, 35px);
+    border: 2px solid var(--primary-color);
+}
+
+.bn-board.opponent .bn-cell.water:hover {
+    background-color: var(--hover-color);
+    cursor: crosshair;
+}
+
+.bn-cell {
+    width: 35px;
+    height: 35px;
+    border: 1px solid #444;
+}
+
+.bn-cell.water { background-color: #1d4d82; }
+.bn-cell.ship { background-color: #8a8a8a; }
+.bn-cell.miss { background-color: #6c757d; }
+.bn-cell.hit { background-color: #dc3545; }
 
 
+/* Styles pour la phase de placement */
+.placement-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.ship-list {
+    display: flex;
+    gap: 0.5rem;
+}
+.ship-item {
+    padding: 0.5rem;
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    cursor: pointer;
+}
+.ship-item.selected {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+}
+.ship-item.placed {
+    text-decoration: line-through;
+    color: #666;
+    background-color: #222;
+    cursor: not-allowed;
+}
 
-
-
-
-
-
-
-
-
+@media (max-width: 768px) {
+    .bn-board {
+        grid-template-columns: repeat(10, 28px);
+        grid-template-rows: repeat(10, 28px);
+    }
+    .bn-cell {
+        width: 28px;
+        height: 28px;
+    }
+}
