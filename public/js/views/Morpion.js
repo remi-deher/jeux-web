@@ -60,7 +60,7 @@ export default {
     },
     template: `
         <div id="morpion-game-vue">
-            <h1>Morpion en temps réel</h1>
+            <h1>Morpion</h1>
             <p id="status">{{ status }}</p>
             <div id="board">
                 <div v-for="(cell, index) in board" 
@@ -71,8 +71,10 @@ export default {
                      {{ cell ? cell.toUpperCase() : '' }}
                 </div>
             </div>
-            <div class="game-controls"> <button id="reset-button" v-if="isGameOver" @click="resetGame">Rejouer</button>
-                <router-link to="/" class="button-secondary">Retour au menu</router-link> </div>
-        </div>
+            <div class="game-controls">
+                <button class="btn btn-primary" v-if="isGameOver" @click="resetGame">Rejouer</button>
+                <router-link to="/" class="btn btn-secondary">Retour au menu</router-link>
+            </div>
+            </div>
     `
 };

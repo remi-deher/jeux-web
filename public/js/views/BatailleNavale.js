@@ -197,7 +197,7 @@ export default {
 
             <div v-if="phase === 'placement'">
                 <h2>Placez et déplacez vos navires</h2>
-                <div class="placement-controls">
+                <div class="game-controls placement-controls">
                     <div class="ship-list">
                         <div v-for="(ship, index) in ships" :key="ship.name"
                              class="ship-item" :class="{ 'placed': ship.placed }"
@@ -205,8 +205,8 @@ export default {
                              {{ ship.name }} ({{ ship.size }})
                         </div>
                     </div>
-                    <button @click="resetPlacement">Réinitialiser</button>
-                    <button @click="confirmPlacement" :disabled="!allShipsPlacedAndValid">Valider</button>
+                    <button class="btn btn-secondary" @click="resetPlacement">Réinitialiser</button>
+                    <button class="btn btn-primary" @click="confirmPlacement" :disabled="!allShipsPlacedAndValid">Valider le placement</button>
                 </div>
                 <div class="boards-container">
                     <div>
@@ -252,6 +252,9 @@ export default {
                             </div>
                         </div>
                     </div>
+                </div>
+                 <div class="game-controls">
+                    <router-link to="/" class="btn btn-secondary">Retour au menu</router-link>
                 </div>
             </div>
         </div>

@@ -71,9 +71,9 @@ export default {
                 </div>
             </div>
             <div class="game-controls">
-                <button id="reset-button" v-if="isGameOver" @click="resetGame">Rejouer</button>
-                <router-link to="/" class="button-secondary">Retour au menu</router-link>
+                <button class="btn btn-primary" v-if="isGameOver" @click="resetGame">Rejouer</button>
+                <router-link to="/" class="btn btn-secondary">Retour au menu</router-link>
             </div>
-        </div>
+            </div>
     `
 };

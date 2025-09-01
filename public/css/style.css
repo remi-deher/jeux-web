@@ -263,6 +263,60 @@ footer {
     background-color: #05fbe8;
 }
 
+
+/* --- Boutons et Contrôles de Jeu (AMÉLIORÉ) --- */
+.game-controls {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.btn {
+    padding: 0.8rem 1.8rem;
+    font-size: 1.1rem;
+    border-radius: 50px; /* Pilule */
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    min-width: 180px; /* Largeur minimale pour la lisibilité */
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-variant);
+    border-color: var(--primary-variant);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(var(--primary-rgb), 0.4);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-color);
+    color: var(--bg-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(var(--secondary-rgb), 0.4);
+}
+
+
 /* --- Styles spécifiques au jeu Morpion --- */
 #morpion-game-vue {
     text-align: center;
@@ -270,6 +324,7 @@ footer {
     background-color: var(--surface-color);
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
 }
 
 #morpion-game-vue h1 {
@@ -325,55 +380,6 @@ footer {
     text-shadow: 0 0 8px rgba(var(--secondary-rgb), 0.5);
 }
 
-.game-controls {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-#reset-button, .button-secondary {
-    padding: 0.8rem 1.8rem;
-    font-size: 1.1rem;
-    border-radius: 25px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-#reset-button {
-    background-color: var(--primary-color);
-    color: var(--bg-color);
-    border: 2px solid var(--primary-color);
-    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3);
-}
-
-#reset-button:hover {
-    background-color: var(--primary-variant);
-    border-color: var(--primary-variant);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(var(--primary-rgb), 0.4);
-}
-
-.button-secondary {
-    background-color: var(--surface-color);
-    color: var(--secondary-color);
-    border: 2px solid var(--secondary-color);
-    box-shadow: 0 4px 10px rgba(var(--text-rgb), 0.1);
-}
-
-.button-secondary:hover {
-    background-color: var(--secondary-color);
-    color: var(--bg-color);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(var(--secondary-rgb), 0.4);
-}
-
 
 /* --- Styles spécifiques au jeu Puissance 4 --- */
 
@@ -383,6 +389,7 @@ footer {
     background-color: var(--surface-color);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
+    width: 100%;
 }
 
 #p4-board-container {
@@ -435,6 +442,10 @@ footer {
 }
 
 /* --- Styles spécifiques à la Bataille Navale --- */
+#bataille-navale-game {
+    width: 100%;
+}
+
 #bataille-navale-game #status.my-turn {
     color: var(--secondary-color);
     font-weight: bold;
@@ -489,6 +500,8 @@ footer {
 .ship-list {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap; /* Permet aux navires de passer à la ligne sur mobile */
+    justify-content: center;
 }
 .ship-item {
     padding: 0.5rem;
@@ -567,16 +580,30 @@ footer {
     .navbar {
         padding: 1rem;
     }
+
+    /* --- Adaptation des boutons sur mobile --- */
+    .game-controls {
+        flex-direction: column; /* Les boutons se superposent */
+        gap: 1rem;
+        align-items: stretch; /* Les boutons prennent toute la largeur */
+    }
+    .btn {
+        width: 100%; /* Pleine largeur */
+        font-size: 1.2rem; /* Plus lisible */
+        padding: 1rem; /* Plus facile à cliquer */
+    }
     
     /* Grille du Morpion */
     #board {
         width: auto;
         grid-template-columns: repeat(3, 25vw);
         grid-template-rows: repeat(3, 25vw);
+        max-width: 315px;
     }
     .cell {
-        width: 25vw;
-        height: 25vw;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1; /* Garde le carré */
         font-size: 10vw;
     }
 
