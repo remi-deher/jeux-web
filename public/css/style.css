@@ -453,6 +453,10 @@ footer {
     grid-template-columns: repeat(10, 35px);
     grid-template-rows: repeat(10, 35px);
     border: 2px solid var(--primary-color);
+    /* Empêche la sélection de texte pendant le glissement */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .bn-board.opponent.my-turn .bn-cell.water:hover {
@@ -586,13 +590,44 @@ footer {
         gap: 0.5rem;
     }
     .ship-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         text-align: center;
         padding: 0.8rem;
     }
     .boards-container {
         gap: 1rem;
     }
+
+    /* Cacher le bouton d'orientation car on utilise "Tap to Rotate" */
+    .placement-controls .desktop-only {
+        display: none;
+    }
+
+    /* Afficher l'indice "Appuyez pour pivoter" uniquement sur mobile */
+    .mobile-hint {
+        display: none;
+        font-size: 0.7rem;
+        color: var(--secondary-color);
+        margin-left: 10px;
+    }
+    .ship-item.selected .mobile-hint {
+        display: inline;
+    }
 }
+
+/* Cacher l'indice "Appuyez pour pivoter" sur les grands écrans */
+.mobile-hint {
+    display: none;
+}
+/* Cacher le bouton d'orientation sur mobile (il est visible par défaut) */
+.desktop-only {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 
 /* --- Style de la barre de scroll --- */
 ::-webkit-scrollbar {
@@ -607,4 +642,53 @@ footer {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-color);
+}
+
+/* --- STYLES AMÉLIORÉS POUR LA BATAILLE NAVALE --- */
+
+.bn-board.placement-board {
+    position: relative; /* Contexte de positionnement pour les navires */
+    cursor: grab;
+}
+
+.placed-ship {
+    position: absolute;
+    background-color: rgba(138, 138, 138, 0.8); /* Gris semi-transparent */
+    border: 1px solid #f0f0f0;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.2s, top 0.1s, left 0.1s; /* Animations fluides */
+    -webkit-user-select: none;
+    user-select: none;
+}
+.placed-ship:active {
+    cursor: grabbing;
+}
+
+.placed-ship.invalid {
+    background-color: rgba(220, 53, 69, 0.8); /* Rouge si invalide */
+    border-color: #ffcdd2;
+}
+
+.placed-ship span {
+    writing-mode: horizontal-tb; /* Assure que le texte est lisible */
+}
+.placed-ship.vertical span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+
+@media (max-width: 768px) {
+    /* ... Vos styles mobiles existants ... */
+
+    .placed-ship {
+        font-size: 0.6rem; /* Police plus petite sur mobile */
+    }
 }

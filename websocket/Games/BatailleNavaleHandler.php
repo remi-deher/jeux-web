@@ -55,7 +55,7 @@ class BatailleNavaleHandler {
 
     private function fullReset() {
         $this->state = [
-            'phase' => 'waiting', // waiting, placement, battle, gameover
+            'phase' => 'waiting',
             'players' => [],
             'turn' => null,
             'winner' => null,
@@ -64,6 +64,10 @@ class BatailleNavaleHandler {
     }
     
     private function handleJoin(ConnectionInterface $conn) {
+        foreach ($this->state['players'] as $player) {
+            if ($player['id'] === $conn->resourceId) return; // Déjà dans la partie
+        }
+        
         if (count($this->state['players']) < 2) {
             $newPlayer = [
                 'id' => $conn->resourceId,
@@ -71,7 +75,6 @@ class BatailleNavaleHandler {
                 'shipsPlaced' => false,
             ];
             $this->state['players'][] = $newPlayer;
-            echo "Joueur {$conn->resourceId} a rejoint la Bataille Navale.\n";
         }
         
         if (count($this->state['players']) === 2) {
@@ -81,12 +84,10 @@ class BatailleNavaleHandler {
     }
 
     private function handlePlaceShips(ConnectionInterface $from, $ships) {
-        // Validation basique des navires (pourrait être plus robuste)
         if ($this->state['phase'] !== 'placement' || count($ships) !== count(self::SHIPS)) return;
 
         foreach ($this->state['players'] as &$player) {
             if ($player['id'] === $from->resourceId) {
-                // Placer les navires sur le plateau du joueur
                 foreach($ships as $ship) {
                     foreach($ship['coords'] as $coord) {
                         $player['board'][$coord['y']][$coord['x']] = 'ship';
@@ -98,8 +99,8 @@ class BatailleNavaleHandler {
         }
         unset($player);
 
-        // Vérifier si les deux joueurs ont placé leurs navires
         $allPlaced = true;
+        if(count($this->state['players']) < 2) $allPlaced = false;
         foreach ($this->state['players'] as $player) {
             if (!$player['shipsPlaced']) {
                 $allPlaced = false;
@@ -109,7 +110,7 @@ class BatailleNavaleHandler {
 
         if ($allPlaced) {
             $this->state['phase'] = 'battle';
-            $this->state['turn'] = $this->state['players'][0]['id']; // Le premier joueur commence
+            $this->state['turn'] = $this->state['players'][0]['id'];
             $this->state['status'] = 'Que la bataille commence ! Au tour du Joueur 1.';
         }
     }
@@ -123,21 +124,18 @@ class BatailleNavaleHandler {
         $x = $coords['x'];
         $targetCell = &$this->state['players'][$opponentIdx]['board'][$y][$x];
 
-        if ($targetCell === 'hit' || $targetCell === 'miss') return; // Déjà tiré ici
+        if ($targetCell === 'hit' || $targetCell === 'miss') return;
 
         if ($targetCell === 'ship') {
             $targetCell = 'hit';
             $this->state['status'] = 'Touché ! Vous pouvez rejouer.';
-            // En bataille navale, un "touché" permet de rejouer. On ne change pas le tour.
         } else {
             $targetCell = 'miss';
-            // Changer de tour
             $this->state['turn'] = $this->state['players'][$opponentIdx]['id'];
             $nextPlayerNum = $opponentIdx + 1;
             $this->state['status'] = "Manqué ! Au tour du Joueur {$nextPlayerNum}.";
         }
 
-        // Vérifier si la partie est terminée
         $opponentShipsLeft = false;
         foreach ($this->state['players'][$opponentIdx]['board'] as $row) {
             if (in_array('ship', $row)) {
@@ -156,7 +154,6 @@ class BatailleNavaleHandler {
 
     private function broadcastState($clients) {
         foreach ($clients as $client) {
-            // Créer une vue personnalisée de l'état pour chaque joueur
             $payload = $this->buildPayloadFor($client->resourceId);
             $client->send(json_encode($payload));
         }
@@ -175,21 +172,25 @@ class BatailleNavaleHandler {
             ]
         ];
 
-        if (count($this->state['players']) < 2) return $payload;
+        $playerIdx = -1;
+        foreach($this->state['players'] as $idx => $p) {
+            if($p['id'] === $playerId) {
+                $playerIdx = $idx;
+                break;
+            }
+        }
 
-        $playerIdx = ($this->state['players'][0]['id'] === $playerId) ? 0 : 1;
+        if ($playerIdx === -1) return $payload;
+
         $opponentIdx = ($playerIdx === 0) ? 1 : 0;
-
-        // Le plateau du joueur avec ses navires visibles
         $payload['state']['myBoard'] = $this->state['players'][$playerIdx]['board'];
-
-        // Le plateau de l'adversaire avec les navires cachés
+        
         $opponentBoardView = [];
         if(isset($this->state['players'][$opponentIdx])) {
+            // ▼▼▼ LIGNE CORRIGÉE ▼▼▼
             foreach($this->state['players'][$opponentIdx]['board'] as $y => $row) {
                 $opponentBoardView[$y] = [];
                 foreach($row as $x => $cell) {
-                    // On ne montre que les tirs (hit/miss), pas les navires (ship)
                     $opponentBoardView[$y][$x] = ($cell === 'hit' || $cell === 'miss') ? $cell : 'water';
                 }
             }
