@@ -9,6 +9,12 @@
     --text-color-secondary: #b3b3b3;
     --border-radius: 12px;
     --box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    --hover-color: #3a3a5e;
+
+    /* Couleurs RGB pour les ombres */
+    --primary-rgb: 187, 134, 252;
+    --secondary-rgb: 3, 218, 198;
+    --text-rgb: 225, 225, 225;
 }
 
 * {
@@ -80,10 +86,15 @@ main {
 
 .main-content {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 2rem;
     max-width: 1400px;
     margin: 0 auto;
+    align-items: flex-start;
+}
+
+.main-view {
+    flex: 3;
 }
 
 footer {
@@ -188,7 +199,9 @@ footer {
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    height: 70vh;
+    position: sticky;
+    top: 2rem;
+    height: calc(100vh - 4rem);
 }
 
 #chat-section h2 {
@@ -250,6 +263,118 @@ footer {
     background-color: #05fbe8;
 }
 
+/* --- Styles spécifiques au jeu Morpion --- */
+#morpion-game-vue {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#morpion-game-vue h1 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+#morpion-game-vue #status {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    min-height: 2rem;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
+    margin: 20px auto;
+    width: 315px;
+    border: 3px solid var(--primary-variant);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--primary-variant);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.cell:hover {
+    background-color: var(--hover-color);
+    transform: scale(1.02);
+}
+
+.cell.x {
+    color: var(--primary-color);
+    text-shadow: 0 0 8px rgba(var(--primary-rgb), 0.5);
+}
+
+.cell.o {
+    color: var(--secondary-color);
+    text-shadow: 0 0 8px rgba(var(--secondary-rgb), 0.5);
+}
+
+.game-controls {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+#reset-button, .button-secondary {
+    padding: 0.8rem 1.8rem;
+    font-size: 1.1rem;
+    border-radius: 25px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+#reset-button {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3);
+}
+
+#reset-button:hover {
+    background-color: var(--primary-variant);
+    border-color: var(--primary-variant);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(var(--primary-rgb), 0.4);
+}
+
+.button-secondary {
+    background-color: var(--surface-color);
+    color: var(--secondary-color);
+    border: 2px solid var(--secondary-color);
+    box-shadow: 0 4px 10px rgba(var(--text-rgb), 0.1);
+}
+
+.button-secondary:hover {
+    background-color: var(--secondary-color);
+    color: var(--bg-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(var(--secondary-rgb), 0.4);
+}
+
+
 /* --- Responsive Design --- */
 @media (max-width: 992px) {
     .main-content {
@@ -259,6 +384,7 @@ footer {
         width: 100%;
         height: auto;
         max-height: 400px;
+        position: static;
     }
 }
 
@@ -287,100 +413,4 @@ footer {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-color);
-}
-
-/* AJOUTS POUR LA SPA */
-.main-content {
-    display: flex;
-    flex-wrap: nowrap; /* Empêche le chat de passer en dessous sur les grands écrans */
-    gap: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    align-items: flex-start;
-}
-
-.main-view {
-    flex: 3; /* La vue principale prend plus de place */
-}
-
-#chat-section {
-    flex: 1; /* Le chat prend l'espace restant */
-    position: sticky; /* Fait en sorte que le chat reste visible au scroll */
-    top: 2rem;
-    height: calc(100vh - 4rem); /* Hauteur dynamique */
-}
-
-.game-main {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 2rem;
-    padding: 2rem;
-    flex-wrap: wrap;
-}
-
-#morpion-game {
-    text-align: center;
-}
-
-#board {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
-    gap: 5px;
-    margin: 20px auto;
-    width: 315px;
-}
-
-.cell {
-    width: 100px;
-    height: 100px;
-    background-color: var(--surface-color);
-    border: 2px solid var(--primary-variant);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 3rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.cell:hover {
-    background-color: #2a2a2a;
-}
-
-.cell.x {
-    color: var(--primary-color);
-}
-.cell.o {
-    color: var(--secondary-color);
-}
-
-#status {
-    font-size: 1.5rem;
-    min-height: 2rem;
-}
-
-#reset-button {
-    margin-top: 1rem;
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-    background-color: var(--primary-color);
-    color: var(--bg-color);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.button-link {
-    background-color: var(--surface-color);
-    color: var(--secondary-color);
-    border: 2px solid var(--secondary-color);
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.button-link:hover {
-    background-color: var(--secondary-color);
-    color: var(--bg-color);
 }

@@ -13,21 +13,19 @@ export default {
         this.connectWebSocket();
     },
     beforeUnmount() {
-        // Nettoyer la connexion quand on quitte la page
         if (this.ws) {
             this.ws.close();
         }
     },
     methods: {
         connectWebSocket() {
-	            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/ws/`;
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/`; // Assurez-vous que le chemin est correct
             
             this.ws = new WebSocket(wsUrl);
 
             this.ws.onopen = () => {
                 console.log("WebSocket connecté pour le Morpion !");
-                // Informer le serveur qu'on rejoint la partie
                 this.ws.send(JSON.stringify({ type: 'morpion', action: 'join' }));
             };
 
@@ -36,7 +34,6 @@ export default {
                 if (data.type === 'morpion_state') {
                     this.updateBoardUI(data.state);
                 } else if (data.type === 'morpion_error') {
-                    // Gérer les erreurs
                     alert(data.message);
                 }
             };
@@ -74,8 +71,8 @@ export default {
                      {{ cell ? cell.toUpperCase() : '' }}
                 </div>
             </div>
-            <button id="reset-button" v-if="isGameOver" @click="resetGame">Rejouer</button>
-            <router-link to="/" class="button-link">Retour au menu</router-link>
+            <div class="game-controls"> <button id="reset-button" v-if="isGameOver" @click="resetGame">Rejouer</button>
+                <router-link to="/" class="button-secondary">Retour au menu</router-link> </div>
         </div>
     `
 };
