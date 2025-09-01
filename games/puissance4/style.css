@@ -1,0 +1,30 @@
+.game-main { display: flex; justify-content: center; align-items: flex-start; gap: 2rem; padding: 2rem; flex-wrap: wrap; }
+#puissance4-game { text-align: center; }
+
+#board {
+    display: flex;
+    background-color: #0077b6; /* Bleu Puissance 4 */
+    padding: 10px;
+    border-radius: 10px;
+    margin: 20px auto;
+}
+.column { cursor: pointer; }
+.column:hover .slot { background-color: #ade8f4; }
+
+.slot {
+    width: 60px;
+    height: 60px;
+    margin: 5px;
+    border-radius: 50%;
+    background-color: var(--bg-color);
+    transition: background-color 0.3s;
+}
+.slot.red { background-color: #d90429; }
+.slot.yellow { background-color: #ffb703; }
+
+#status { font-size: 1.5rem; min-height: 2rem; }
+.game-controls { margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 1rem; }
+#reset-button, .button-link { padding: 0.8rem 1.5rem; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; }
+#reset-button { background-color: var(--primary-color); color: var(--bg-color); }
+.button-link { background-color: var(--surface-color); color: var(--secondary-color); border: 2px solid var(--secondary-color); }
+.button-link:hover { background-color: var(--secondary-color); color: var(--bg-color); }

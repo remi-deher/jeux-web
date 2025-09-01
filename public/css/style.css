@@ -288,3 +288,24 @@ footer {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-color);
 }
+
+/* AJOUTS POUR LA SPA */
+.main-content {
+    display: flex;
+    flex-wrap: nowrap; /* Empêche le chat de passer en dessous sur les grands écrans */
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+.main-view {
+    flex: 3; /* La vue principale prend plus de place */
+}
+
+#chat-section {
+    flex: 1; /* Le chat prend l'espace restant */
+    position: sticky; /* Fait en sorte que le chat reste visible au scroll */
+    top: 2rem;
+    height: calc(100vh - 4rem); /* Hauteur dynamique */
+}
