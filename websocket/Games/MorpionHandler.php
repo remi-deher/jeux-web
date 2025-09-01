@@ -10,7 +10,7 @@ class MorpionHandler {
     private $players; // [resourceId => 'x' | 'o']
 
     public function __construct() {
-        $this->fullReset(); // On utilise la nouvelle fonction de reset complet au démarrage
+        $this->fullReset();
     }
     
     public function onMessage(ConnectionInterface $from, $data, $clients) {
@@ -19,33 +19,27 @@ class MorpionHandler {
         switch ($action) {
             case 'join':
                 $this->handleJoin($from);
-                $this->broadcastState($clients); // Envoyer l'état après le join
                 break;
             case 'move':
                 $this->handleMove($from, $data['cellIndex'] ?? null);
-                $this->broadcastState($clients); // Envoyer l'état après le coup
                 break;
             case 'reset':
-                // MODIFIÉ : On ne fait que commencer une nouvelle manche, on ne supprime pas les joueurs
                 $this->startNewRound();
-                $this->broadcastState($clients); // Envoyer l'état après le reset
                 break;
         }
+        // On envoie l'état après chaque action
+        $this->broadcastState($clients);
     }
     
     public function onDisconnect(ConnectionInterface $conn, $clients) {
         if (isset($this->players[$conn->resourceId])) {
             echo "Un joueur de morpion a quitté. Le jeu est complètement réinitialisé.\n";
-            // On utilise le reset complet quand quelqu'un part
-            $this->fullReset();
+            unset($this->players[$conn->resourceId]); // On retire juste le joueur
+            $this->fullReset(); // On réinitialise complètement
             $this->broadcastState($clients);
         }
     }
     
-    /**
-     * RENOMMÉE : Réinitialise complètement le jeu, y compris les joueurs.
-     * À utiliser lors d'une déconnexion ou au démarrage du serveur.
-     */
     private function fullReset() {
         echo "Réinitialisation complète du jeu Morpion.\n";
         $this->state = [
@@ -57,29 +51,33 @@ class MorpionHandler {
         $this->players = [];
     }
 
-    /**
-     * NOUVELLE FONCTION : Réinitialise uniquement le plateau pour une nouvelle manche.
-     * Les joueurs restent les mêmes.
-     */
     private function startNewRound() {
-        // Ne recommence que si la partie est bien finie
         if (!$this->state['isGameOver']) {
             return;
         }
         
         echo "Lancement d'une nouvelle manche de Morpion.\n";
         $this->state['board'] = array_fill(0, 9, null);
-        $this->state['nextPlayer'] = 'x'; // X commence toujours la nouvelle manche (simple)
+        $this->state['nextPlayer'] = 'x';
         $this->state['isGameOver'] = false;
         $this->state['status'] = 'Nouvelle manche ! Au tour du joueur X';
     }
 
+    // ▼▼▼ SECTION MODIFIÉE ▼▼▼
     private function broadcastState($clients) {
-        $payload = json_encode(['type' => 'morpion_state', 'state' => $this->state]);
         foreach ($clients as $client) {
+            // On détermine le symbole du joueur actuel
+            $playerSymbol = $this->players[$client->resourceId] ?? null;
+
+            // On ajoute le symbole du joueur à l'état envoyé
+            $stateForPlayer = $this->state;
+            $stateForPlayer['playerSymbol'] = $playerSymbol;
+
+            $payload = json_encode(['type' => 'morpion_state', 'state' => $stateForPlayer]);
             $client->send($payload);
         }
     }
+    // ▲▲▲ FIN SECTION MODIFIÉE ▲▲▲
     
     private function handleJoin(ConnectionInterface $conn) {
         if (count($this->players) < 2 && !isset($this->players[$conn->resourceId])) {

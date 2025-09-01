@@ -3,10 +3,10 @@
 export default {
     data() {
         return {
-            // Initialise un tableau vide pour éviter les erreurs avant la première mise à jour
             board: Array(6).fill(null).map(() => Array(7).fill(null)),
             status: 'Connexion au jeu...',
             isGameOver: false,
+            playerColor: null, // <-- AJOUT: pour stocker 'red' ou 'yellow'
             ws: null
         };
     },
@@ -52,11 +52,18 @@ export default {
             this.board = state.board;
             this.status = state.status;
             this.isGameOver = state.isGameOver;
+            this.playerColor = state.playerColor; // <-- AJOUT: mise à jour de la couleur
         }
     },
     template: `
         <div id="puissance4-game-vue">
             <h1>Puissance 4</h1>
+
+            <div class="player-info" v-if="playerColor">
+                Vous jouez avec les jetons 
+                <span class="p4-token-indicator" :class="playerColor"></span>
+                <span :class="playerColor + '-text'">{{ playerColor === 'red' ? 'Rouges' : 'Jaunes' }}</span>
+            </div>
             <p id="status">{{ status }}</p>
             <div id="p4-board-container">
                 <div id="p4-board">
@@ -74,6 +81,6 @@ export default {
                 <button class="btn btn-primary" v-if="isGameOver" @click="resetGame">Rejouer</button>
                 <router-link to="/" class="btn btn-secondary">Retour au menu</router-link>
             </div>
-            </div>
+        </div>
     `
 };

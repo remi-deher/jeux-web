@@ -665,3 +665,42 @@ footer {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-color);
 }
+
+/* --- Styles pour l'information du joueur --- */
+.player-info {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 8px;
+}
+
+/* Pour Morpion (X et O) */
+.player-info .x {
+    color: var(--primary-color);
+}
+.player-info .o {
+    color: var(--secondary-color);
+}
+
+/* Pour Puissance 4 (jeton indicateur) */
+.p4-token-indicator {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+.p4-token-indicator.red {
+    background-color: #dc3545;
+}
+.p4-token-indicator.yellow {
+    background-color: #ffc107;
+}
+.red-text { color: #dc3545; }
+.yellow-text { color: #ffc107; }

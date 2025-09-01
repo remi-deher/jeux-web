@@ -22,17 +22,15 @@ class Puissance4Handler {
         switch ($action) {
             case 'join':
                 $this->handleJoin($from);
-                $this->broadcastState($clients);
                 break;
             case 'move':
                 $this->handleMove($from, $data['columnIndex'] ?? null);
-                $this->broadcastState($clients);
                 break;
             case 'reset':
                 $this->startNewRound();
-                $this->broadcastState($clients);
                 break;
         }
+        $this->broadcastState($clients);
     }
 
     public function onDisconnect(ConnectionInterface $conn, $clients) {
@@ -42,13 +40,22 @@ class Puissance4Handler {
             $this->broadcastState($clients);
         }
     }
-
+    
+    // ▼▼▼ SECTION MODIFIÉE ▼▼▼
     private function broadcastState($clients) {
-        $payload = json_encode(['type' => 'puissance4_state', 'state' => $this->state]);
         foreach ($clients as $client) {
+            // On détermine la couleur du joueur actuel
+            $playerColor = $this->players[$client->resourceId] ?? null;
+
+            // On ajoute la couleur du joueur à l'état envoyé
+            $stateForPlayer = $this->state;
+            $stateForPlayer['playerColor'] = $playerColor;
+
+            $payload = json_encode(['type' => 'puissance4_state', 'state' => $stateForPlayer]);
             $client->send($payload);
         }
     }
+    // ▲▲▲ FIN SECTION MODIFIÉE ▲▲▲
 
     private function fullReset() {
         $this->state = [
@@ -90,12 +97,10 @@ class Puissance4Handler {
             return; // Pas son tour
         }
         
-        // Vérifier si la colonne est valide et non pleine
         if ($col < 0 || $col >= self::COLS || $this->state['board'][0][$col] !== null) {
             return; // Mouvement invalide
         }
 
-        // Placer le jeton
         $row = -1;
         for ($i = self::ROWS - 1; $i >= 0; $i--) {
             if ($this->state['board'][$i][$col] === null) {
@@ -105,7 +110,6 @@ class Puissance4Handler {
             }
         }
 
-        // Vérifier la victoire
         if ($this->checkWin($row, $col, $playerColor)) {
             $this->state['isGameOver'] = true;
             $this->state['status'] = "Le joueur " . ucfirst($playerColor) . " a gagné !";
@@ -119,11 +123,9 @@ class Puissance4Handler {
     }
 
     private function checkWin($row, $col, $color) {
-        // Horizontal, Vertical, Diagonal (\), Diagonal (/)
         $directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
         foreach ($directions as $dir) {
             $count = 1;
-            // Vérifier dans une direction
             for ($i = 1; $i < 4; $i++) {
                 $r = $row + $dir[0] * $i;
                 $c = $col + $dir[1] * $i;
@@ -133,7 +135,6 @@ class Puissance4Handler {
                     break;
                 }
             }
-            // Vérifier dans la direction opposée
             for ($i = 1; $i < 4; $i++) {
                 $r = $row - $dir[0] * $i;
                 $c = $col - $dir[1] * $i;
