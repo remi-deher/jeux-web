@@ -333,11 +333,9 @@ main {
     min-height: 2rem;
 }
 
-/* ▼▼▼ SECTION CORRIGÉE ▼▼▼ */
 /* Le JS va définir la taille, le CSS s'occupe du reste */
 #board {
     display: grid;
-    /* Les colonnes et rangées sont définies par le JS via les styles en ligne */
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 5px;
@@ -348,19 +346,16 @@ main {
 }
 
 .cell {
-    /* La taille est maintenant gérée par le JS */
     background-color: var(--bg-color);
     border: 1px solid var(--primary-variant);
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: clamp(2rem, 15vw, 4rem); /* Police responsive avec des limites */
+    font-size: clamp(2rem, 15vw, 4rem);
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
 }
-/* ▲▲▲ FIN SECTION CORRIGÉE ▲▲▲ */
-
 
 .cell:hover {
     background-color: var(--hover-color);
@@ -380,14 +375,21 @@ main {
 
 /* --- Styles spécifiques au jeu Puissance 4 --- */
 
+/* ▼▼▼ SECTION CORRIGÉE ▼▼▼ */
 #puissance4-game-vue {
     text-align: center;
-    padding: 2rem;
+    padding: 2rem 1rem; /* Adapté pour mobile */
     background-color: var(--surface-color);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     width: 100%;
+    /* Ajout pour centrer la grille */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+/* ▲▲▲ FIN SECTION CORRIGÉE ▲▲▲ */
+
 
 #p4-board-container {
     display: inline-block;
@@ -497,7 +499,7 @@ main {
 .ship-list {
     display: flex;
     gap: 0.5rem;
-    flex-wrap: wrap; /* Permet aux navires de passer à la ligne sur mobile */
+    flex-wrap: wrap;
     justify-content: center;
 }
 .ship-item {
@@ -580,24 +582,28 @@ main {
 
     /* --- Adaptation des boutons sur mobile --- */
     .game-controls {
-        flex-direction: column; /* Les boutons se superposent */
+        flex-direction: column;
         gap: 1rem;
-        align-items: stretch; /* Les boutons prennent toute la largeur */
+        align-items: stretch;
     }
     .btn {
-        width: 100%; /* Pleine largeur */
-        font-size: 1.2rem; /* Plus lisible */
-        padding: 1rem; /* Plus facile à cliquer */
+        width: 100%;
+        font-size: 1.2rem;
+        padding: 1rem;
     }
 
     /* Grille du Puissance 4 */
     .p4-cell {
         width: 12vw;
         height: 12vw;
+        max-width: 50px; /* Ajout d'une taille max pour éviter d'être trop gros */
+        max-height: 50px;
     }
     .p4-token {
         width: 10vw;
         height: 10vw;
+        max-width: 42px;
+        max-height: 42px;
     }
 
     /* Grille de la Bataille Navale */
@@ -691,7 +697,7 @@ main {
 /* --- Styles pour le Footer --- */
 footer {
     text-align: center;
-    padding: 2rem; /* Augmentation du padding pour plus d'espace */
+    padding: 2rem;
     background-color: var(--surface-color);
     color: var(--text-color-secondary);
     font-size: 0.9rem;
@@ -699,7 +705,7 @@ footer {
 }
 
 .footer-content p {
-    margin-bottom: 0.5rem; /* Espace entre les lignes */
+    margin-bottom: 0.5rem;
 }
 
 .footer-content a {
