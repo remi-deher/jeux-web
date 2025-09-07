@@ -10,13 +10,19 @@ export default {
             myBoard: Array(10).fill(null).map(() => Array(10).fill('water')),
             opponentBoard: Array(10).fill(null).map(() => Array(10).fill('water')),
             
+            opponentSunkShips: [],
+            myId: null,
+            winnerId: null,
+
+            // ▼▼▼ SECTION CORRIGÉE : Nouveaux liens d'images de navires militaires ▼▼▼
             ships: [
-                { name: 'porte-avions', size: 5, placed: false, x: 0, y: 0, orientation: 'horizontal', isValid: true },
-                { name: 'croiseur', size: 4, placed: false, x: 0, y: 1, orientation: 'horizontal', isValid: true },
-                { name: 'contre-torpilleur', size: 3, placed: false, x: 0, y: 2, orientation: 'horizontal', isValid: true },
-                { name: 'sous-marin', size: 3, placed: false, x: 0, y: 3, orientation: 'horizontal', isValid: true },
-                { name: 'torpilleur', size: 2, placed: false, x: 0, y: 4, orientation: 'horizontal', isValid: true }
+                { name: 'porte-avions', size: 5, placed: false, x: 0, y: 0, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/aircraft_carrier.png' },
+                { name: 'croiseur', size: 4, placed: false, x: 0, y: 1, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/cruiser.png' },
+                { name: 'contre-torpilleur', size: 3, placed: false, x: 0, y: 2, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/destroyer.png' },
+                { name: 'sous-marin', size: 3, placed: false, x: 0, y: 3, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/submarine.png' },
+                { name: 'torpilleur', size: 2, placed: false, x: 0, y: 4, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/patrol_boat.png' }
             ],
+            // ▲▲▲ FIN SECTION CORRIGÉE ▲▲▲
             
             draggedShipIndex: null,
             draggedOffsetX: 0,
@@ -26,6 +32,18 @@ export default {
     computed: {
         allShipsPlacedAndValid() {
             return this.ships.every(ship => ship.placed && ship.isValid);
+        },
+        isGameOver() {
+            return this.phase === 'gameover';
+        },
+        winStatus() {
+            if (!this.isGameOver) return '';
+            if (this.winnerId === this.myId) {
+                return 'Vous avez gagné !';
+            } else if (this.winnerId) {
+                return 'Vous avez perdu...';
+            }
+            return 'Partie terminée.';
         }
     },
     mounted() {
@@ -55,13 +73,22 @@ export default {
             this.phase = state.phase;
             this.isMyTurn = state.isMyTurn;
             this.status = state.status;
-            // Uniquement mettre à jour les plateaux si on n'est pas en phase de placement
-            // pour ne pas écraser le travail de l'utilisateur.
-            if(this.phase !== 'placement' && state.myBoard && state.myBoard.length > 0) {
-                this.myBoard = state.myBoard;
+            
+            this.myId = state.myId;
+            this.winnerId = state.winner;
+            this.opponentSunkShips = state.opponentSunkShips || [];
+
+            if(state.myBoard && state.myBoard.length > 0) {
+                 this.myBoard = state.myBoard;
             }
             if (state.opponentBoard && state.opponentBoard.length > 0) {
                 this.opponentBoard = state.opponentBoard;
+            }
+        },
+        
+        resetGame() {
+            if (this.ws) {
+                this.ws.send(JSON.stringify({ type: 'bataille_navale', action: 'reset' }));
             }
         },
 
@@ -193,7 +220,7 @@ export default {
     template: `
         <div id="bataille-navale-game">
             <h1>Bataille Navale</h1>
-            <p id="status" :class="{ 'my-turn': isMyTurn }">{{ status }}</p>
+            <p id="status" :class="{ 'my-turn': isMyTurn }">{{ isGameOver ? winStatus : status }}</p>
 
             <div v-if="phase === 'placement'">
                 <h2>Placez et déplacez vos navires</h2>
@@ -213,10 +240,11 @@ export default {
                         <h3>Mon Plateau</h3>
                         <div class="bn-board placement-board">
                              <div v-for="i in 100" class="bn-cell water"></div>
+                            
                             <template v-for="(ship, index) in ships">
                                 <div v-if="ship.placed"
                                      class="placed-ship"
-                                     :class="[ship.orientation, { 'invalid': !ship.isValid }]"
+                                     :class="{ 'invalid': !ship.isValid }"
                                      :style="{ 
                                          top: ship.y * 10 + '%', 
                                          left: ship.x * 10 + '%',
@@ -226,7 +254,12 @@ export default {
                                      @click.stop="rotatePlacedShip(index)"
                                      @mousedown.prevent="startDrag($event, index)"
                                      @touchstart.prevent="startDrag($event, index)">
-                                     <span class="ship-name-on-grid">{{ ship.name }}</span>
+                                     
+                                     <img :src="ship.image" 
+                                          :class="ship.orientation"
+                                          class="ship-image" 
+                                          alt="ship.name" 
+                                          ondragstart="return false;" />
                                 </div>
                             </template>
                         </div>
@@ -235,8 +268,17 @@ export default {
             </div>
 
             <div v-if="phase === 'battle' || phase === 'gameover'">
-                 <div class="boards-container">
-                    <div v-if="isMyTurn">
+                <div class="opponent-ships-status">
+                    <h4>Navires adverses :</h4>
+                    <ul>
+                        <li v-for="ship in ships" :key="ship.name" :class="{ 'sunk': opponentSunkShips.includes(ship.name) }">
+                            {{ ship.name }}
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="boards-container">
+                    <div v-if="isMyTurn && !isGameOver">
                         <h3>Plateau Adverse</h3>
                         <div class="bn-board opponent my-turn">
                              <div v-for="(row, y) in opponentBoard" class="bn-row">
@@ -254,9 +296,10 @@ export default {
                     </div>
                 </div>
                  <div class="game-controls">
+                    <button v-if="isGameOver" class="btn btn-primary" @click="resetGame">Rejouer</button>
                     <router-link to="/" class="btn btn-secondary">Retour au menu</router-link>
                 </div>
             </div>
-            </div>
+        </div>
     `
 };

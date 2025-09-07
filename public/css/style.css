@@ -718,3 +718,98 @@ footer {
     color: var(--primary-color);
     text-decoration: underline;
 }
+
+/* --- Améliorations spécifiques à la Bataille Navale --- */
+
+#bataille-navale-game h1 {
+    font-family: 'Georgia', serif;
+    color: var(--secondary-color);
+    text-shadow: 0 0 8px rgba(var(--secondary-rgb), 0.5);
+}
+
+.bn-board {
+    border: 3px solid var(--secondary-color);
+    background: linear-gradient(135deg, #1d4d82 0%, #2b6bad 100%);
+    box-shadow: 0 0 15px rgba(var(--secondary-rgb), 0.3), inset 0 0 10px rgba(0,0,0,0.4);
+}
+
+/* On rend l'eau transparente pour voir le dégradé du plateau */
+.bn-cell.water { background-color: transparent; }
+
+/* --- Animations de Tir --- */
+@keyframes hit-animation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); background-color: #ff8a00; }
+    100% { transform: scale(1); }
+}
+
+@keyframes miss-animation {
+    0% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(0.7); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.5; }
+}
+
+.bn-cell.hit, .bn-cell.miss {
+    position: relative;
+}
+
+/* Pseudo-élément pour l'effet visuel des tirs */
+.bn-cell.hit::after, .bn-cell.miss::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+}
+
+.bn-cell.hit::after {
+    width: 70%;
+    height: 70%;
+    background-color: #dc3545;
+    box-shadow: 0 0 8px 2px #ffc107;
+    animation: hit-animation 0.4s ease-out;
+}
+
+.bn-cell.miss::after {
+    width: 40%;
+    height: 40%;
+    background-color: rgba(255, 255, 255, 0.5);
+    animation: miss-animation 0.4s ease-in-out;
+}
+
+
+/* --- Style pour la liste des navires coulés --- */
+.opponent-ships-status {
+    background-color: rgba(0,0,0,0.2);
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--border-radius);
+    margin: 1rem auto 2rem auto;
+    max-width: 90%;
+    width: fit-content;
+    text-align: center;
+    border: 1px solid #444;
+}
+.opponent-ships-status h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color-secondary);
+}
+.opponent-ships-status ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.opponent-ships-status li {
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+.opponent-ships-status li.sunk {
+    text-decoration: line-through;
+    color: var(--text-color-secondary);
+    opacity: 0.5;
+    transform: scale(0.9);
+}

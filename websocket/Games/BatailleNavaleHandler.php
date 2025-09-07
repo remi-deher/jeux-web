@@ -34,6 +34,11 @@ class BatailleNavaleHandler {
             case 'fire_shot':
                 $this->handleFireShot($from, $data['coords'] ?? null);
                 break;
+            // ▼▼▼ AJOUT ▼▼▼
+            case 'reset':
+                $this->startNewRound();
+                break;
+            // ▲▲▲ FIN AJOUT ▲▲▲
         }
         $this->broadcastState($clients);
     }
@@ -52,6 +57,26 @@ class BatailleNavaleHandler {
             $this->broadcastState($clients);
         }
     }
+    
+    // ▼▼▼ NOUVELLE FONCTION ▼▼▼
+    private function startNewRound() {
+        if (count($this->state['players']) < 2) return;
+
+        $this->state['phase'] = 'placement';
+        $this->state['turn'] = null;
+        $this->state['winner'] = null;
+        $this->state['status'] = 'Nouvelle partie ! Placez vos navires.';
+
+        // Réinitialise les données de chaque joueur pour la nouvelle manche
+        foreach ($this->state['players'] as &$player) {
+            $player['board'] = array_fill(0, self::GRID_SIZE, array_fill(0, self::GRID_SIZE, 'water'));
+            $player['ships'] = [];
+            $player['sunkShips'] = [];
+            $player['shipsPlaced'] = false;
+        }
+        unset($player);
+    }
+    // ▲▲▲ FIN NOUVELLE FONCTION ▲▲▲
 
     private function fullReset() {
         $this->state = [
@@ -65,13 +90,15 @@ class BatailleNavaleHandler {
     
     private function handleJoin(ConnectionInterface $conn) {
         foreach ($this->state['players'] as $player) {
-            if ($player['id'] === $conn->resourceId) return; // Déjà dans la partie
+            if ($player['id'] === $conn->resourceId) return;
         }
         
         if (count($this->state['players']) < 2) {
             $newPlayer = [
                 'id' => $conn->resourceId,
                 'board' => array_fill(0, self::GRID_SIZE, array_fill(0, self::GRID_SIZE, 'water')),
+                'ships' => [], // Pour stocker la définition des navires
+                'sunkShips' => [], // Pour stocker les noms des navires coulés
                 'shipsPlaced' => false,
             ];
             $this->state['players'][] = $newPlayer;
@@ -88,6 +115,7 @@ class BatailleNavaleHandler {
 
         foreach ($this->state['players'] as &$player) {
             if ($player['id'] === $from->resourceId) {
+                $player['ships'] = $ships; // On sauvegarde la position des navires
                 foreach($ships as $ship) {
                     foreach($ship['coords'] as $coord) {
                         $player['board'][$coord['y']][$coord['x']] = 'ship';
@@ -102,10 +130,7 @@ class BatailleNavaleHandler {
         $allPlaced = true;
         if(count($this->state['players']) < 2) $allPlaced = false;
         foreach ($this->state['players'] as $player) {
-            if (!$player['shipsPlaced']) {
-                $allPlaced = false;
-                break;
-            }
+            if (!$player['shipsPlaced']) $allPlaced = false;
         }
 
         if ($allPlaced) {
@@ -129,6 +154,25 @@ class BatailleNavaleHandler {
         if ($targetCell === 'ship') {
             $targetCell = 'hit';
             $this->state['status'] = 'Touché ! Vous pouvez rejouer.';
+
+            // ▼▼▼ SECTION MODIFIÉE : Vérification si un navire est coulé ▼▼▼
+            foreach ($this->state['players'][$opponentIdx]['ships'] as $ship) {
+                if (!in_array($ship['name'], $this->state['players'][$opponentIdx]['sunkShips'])) {
+                    $isSunk = true;
+                    foreach ($ship['coords'] as $coord) {
+                        if ($this->state['players'][$opponentIdx]['board'][$coord['y']][$coord['x']] !== 'hit') {
+                            $isSunk = false;
+                            break;
+                        }
+                    }
+                    if ($isSunk) {
+                        $this->state['players'][$opponentIdx]['sunkShips'][] = $ship['name'];
+                        $this->state['status'] = 'Touché... Coulé ! (' . $ship['name'] . ') Rejouez !';
+                    }
+                }
+            }
+            // ▲▲▲ FIN SECTION MODIFIÉE ▲▲▲
+
         } else {
             $targetCell = 'miss';
             $this->state['turn'] = $this->state['players'][$opponentIdx]['id'];
@@ -136,19 +180,11 @@ class BatailleNavaleHandler {
             $this->state['status'] = "Manqué ! Au tour du Joueur {$nextPlayerNum}.";
         }
 
-        $opponentShipsLeft = false;
-        foreach ($this->state['players'][$opponentIdx]['board'] as $row) {
-            if (in_array('ship', $row)) {
-                $opponentShipsLeft = true;
-                break;
-            }
-        }
-
-        if (!$opponentShipsLeft) {
+        if (count($this->state['players'][$opponentIdx]['sunkShips']) === count(self::SHIPS)) {
             $this->state['phase'] = 'gameover';
             $this->state['winner'] = $from->resourceId;
             $winnerNum = ($opponentIdx === 1) ? 1 : 2;
-            $this->state['status'] = "Coulé ! Le Joueur {$winnerNum} a gagné la partie !";
+            $this->state['status'] = "Tous les navires adverses sont coulés ! Le Joueur {$winnerNum} a gagné !";
         }
     }
 
@@ -160,6 +196,16 @@ class BatailleNavaleHandler {
     }
 
     private function buildPayloadFor($playerId) {
+        $playerIdx = -1;
+        $opponentIdx = -1;
+        foreach($this->state['players'] as $idx => $p) {
+            if($p['id'] === $playerId) $playerIdx = $idx;
+        }
+
+        if ($playerIdx === -1) return ['type' => 'bataille_navale_state', 'state' => ['phase' => 'waiting']];
+        
+        $opponentIdx = ($playerIdx === 0 && count($this->state['players']) > 1) ? 1 : 0;
+
         $payload = [
             'type' => 'bataille_navale_state',
             'state' => [
@@ -167,35 +213,24 @@ class BatailleNavaleHandler {
                 'isMyTurn' => $this->state['turn'] === $playerId,
                 'status' => $this->state['status'],
                 'winner' => $this->state['winner'],
-                'myBoard' => [],
-                'opponentBoard' => []
+                'myId' => $playerId, // Envoyer l'ID du joueur
+                'myBoard' => $this->state['players'][$playerIdx]['board'],
+                'opponentBoard' => [],
+                'opponentSunkShips' => [],
             ]
         ];
-
-        $playerIdx = -1;
-        foreach($this->state['players'] as $idx => $p) {
-            if($p['id'] === $playerId) {
-                $playerIdx = $idx;
-                break;
-            }
-        }
-
-        if ($playerIdx === -1) return $payload;
-
-        $opponentIdx = ($playerIdx === 0) ? 1 : 0;
-        $payload['state']['myBoard'] = $this->state['players'][$playerIdx]['board'];
         
-        $opponentBoardView = [];
         if(isset($this->state['players'][$opponentIdx])) {
-            // ▼▼▼ LIGNE CORRIGÉE ▼▼▼
+            $payload['state']['opponentSunkShips'] = $this->state['players'][$opponentIdx]['sunkShips'];
+            $opponentBoardView = [];
             foreach($this->state['players'][$opponentIdx]['board'] as $y => $row) {
                 $opponentBoardView[$y] = [];
                 foreach($row as $x => $cell) {
                     $opponentBoardView[$y][$x] = ($cell === 'hit' || $cell === 'miss') ? $cell : 'water';
                 }
             }
+            $payload['state']['opponentBoard'] = $opponentBoardView;
         }
-        $payload['state']['opponentBoard'] = $opponentBoardView;
 
         return $payload;
     }
