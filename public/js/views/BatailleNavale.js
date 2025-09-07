@@ -14,15 +14,15 @@ export default {
             myId: null,
             winnerId: null,
 
-            // ▼▼▼ SECTION CORRIGÉE : Nouveaux liens d'images de navires militaires ▼▼▼
+            // ▼▼▼ SECTION MODIFIÉE : Images distinctes pour chaque orientation ▼▼▼
             ships: [
-                { name: 'porte-avions', size: 5, placed: false, x: 0, y: 0, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/aircraft_carrier.png' },
-                { name: 'croiseur', size: 4, placed: false, x: 0, y: 1, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/cruiser.png' },
-                { name: 'contre-torpilleur', size: 3, placed: false, x: 0, y: 2, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/destroyer.png' },
-                { name: 'sous-marin', size: 3, placed: false, x: 0, y: 3, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/submarine.png' },
-                { name: 'torpilleur', size: 2, placed: false, x: 0, y: 4, orientation: 'horizontal', isValid: true, image: 'https://opengameart.org/sites/default/files/patrol_boat.png' }
+                { name: 'porte-avions', size: 5, placed: false, x: 0, y: 0, orientation: 'horizontal', isValid: true, image_horizontal: '/images/ships/porte-avions-h.png', image_vertical: '/images/ships/porte-avions-v.png' },
+                { name: 'croiseur', size: 4, placed: false, x: 0, y: 1, orientation: 'horizontal', isValid: true, image_horizontal: '/images/ships/croiseur-h.png', image_vertical: '/images/ships/croiseur-v.png' },
+                { name: 'contre-torpilleur', size: 3, placed: false, x: 0, y: 2, orientation: 'horizontal', isValid: true, image_horizontal: '/images/ships/contre-torpilleur-h.png', image_vertical: '/images/ships/contre-torpilleur-v.png' },
+                { name: 'sous-marin', size: 3, placed: false, x: 0, y: 3, orientation: 'horizontal', isValid: true, image_horizontal: '/images/ships/sous-marin-h.png', image_vertical: '/images/ships/sous-marin-v.png' },
+                { name: 'torpilleur', size: 2, placed: false, x: 0, y: 4, orientation: 'horizontal', isValid: true, image_horizontal: '/images/ships/torpilleur-h.png', image_vertical: '/images/ships/torpilleur-v.png' }
             ],
-            // ▲▲▲ FIN SECTION CORRIGÉE ▲▲▲
+            // ▲▲▲ FIN SECTION MODIFIÉE ▲▲▲
             
             draggedShipIndex: null,
             draggedOffsetX: 0,
@@ -249,20 +249,19 @@ export default {
                                          top: ship.y * 10 + '%', 
                                          left: ship.x * 10 + '%',
                                          width: (ship.orientation === 'horizontal' ? ship.size * 10 : 10) + '%',
-                                         height: (ship.orientation === 'vertical' ? ship.size * 10 : 10) + '%'
+                                         height: (ship.orientation === 'horizontal' ? 10 : ship.size * 10) + '%'
                                      }"
                                      @click.stop="rotatePlacedShip(index)"
                                      @mousedown.prevent="startDrag($event, index)"
                                      @touchstart.prevent="startDrag($event, index)">
                                      
-                                     <img :src="ship.image" 
-                                          :class="ship.orientation"
+                                     <img :src="ship.orientation === 'horizontal' ? ship.image_horizontal : ship.image_vertical" 
                                           class="ship-image" 
-                                          alt="ship.name" 
+                                          :alt="ship.name" 
                                           ondragstart="return false;" />
                                 </div>
                             </template>
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -286,14 +285,30 @@ export default {
                             </div>
                         </div>
                     </div>
+                    
                     <div v-else>
                         <h3>Mon Plateau</h3>
-                        <div class="bn-board">
-                             <div v-for="row in myBoard" class="bn-row">
-                                <div v-for="cell in row" class="bn-cell" :class="cell"></div>
+                        <div class="bn-board my-battle-board">
+                             <div v-for="(row, y) in myBoard" class="bn-row">
+                                <div v-for="(cell, x) in row" class="bn-cell" :class="cell.replace('ship', 'water')"></div>
                             </div>
+                            <template v-for="ship in ships">
+                                <div class="placed-ship"
+                                     :style="{ 
+                                         top: ship.y * 10 + '%', 
+                                         left: ship.x * 10 + '%',
+                                         width: (ship.orientation === 'horizontal' ? ship.size * 10 : 10) + '%',
+                                         height: (ship.orientation === 'horizontal' ? 10 : ship.size * 10) + '%'
+                                     }">
+                                     
+                                     <img :src="ship.orientation === 'horizontal' ? ship.image_horizontal : ship.image_vertical" 
+                                          class="ship-image" 
+                                          :alt="ship.name" />
+                                </div>
+                            </template>
                         </div>
                     </div>
+
                 </div>
                  <div class="game-controls">
                     <button v-if="isGameOver" class="btn btn-primary" @click="resetGame">Rejouer</button>
