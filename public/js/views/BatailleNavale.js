@@ -236,19 +236,19 @@ export default {
 
             <div v-if="phase === 'battle' || phase === 'gameover'">
                  <div class="boards-container">
-                    <div>
+                    <div v-if="isMyTurn">
+                        <h3>Plateau Adverse</h3>
+                        <div class="bn-board opponent my-turn">
+                             <div v-for="(row, y) in opponentBoard" class="bn-row">
+                                <div v-for="(cell, x) in row" class="bn-cell" :class="cell" @click="fireShot(y, x)"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else>
                         <h3>Mon Plateau</h3>
                         <div class="bn-board">
                              <div v-for="row in myBoard" class="bn-row">
                                 <div v-for="cell in row" class="bn-cell" :class="cell"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <h3>Plateau Adverse</h3>
-                        <div class="bn-board opponent" :class="{ 'my-turn': isMyTurn }">
-                             <div v-for="(row, y) in opponentBoard" class="bn-row">
-                                <div v-for="(cell, x) in row" class="bn-cell" :class="cell" @click="fireShot(y, x)"></div>
                             </div>
                         </div>
                     </div>
@@ -257,6 +257,6 @@ export default {
                     <router-link to="/" class="btn btn-secondary">Retour au menu</router-link>
                 </div>
             </div>
-        </div>
+            </div>
     `
 };
