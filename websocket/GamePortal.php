@@ -8,6 +8,8 @@ use Ratchet\ConnectionInterface;
 use WebSocket\Games\MorpionHandler;
 use WebSocket\Games\Puissance4Handler;
 use WebSocket\Games\BatailleNavaleHandler;
+use WebSocket\Games\PongHandler; // Ajout du Handler Pong
+use React\EventLoop\Loop; // Ajout pour la boucle de jeu
 
 class GamePortal implements MessageComponentInterface {
     protected $clients;
@@ -22,8 +24,17 @@ class GamePortal implements MessageComponentInterface {
         $this->gameHandlers = [
             'morpion' => new MorpionHandler(),
             'puissance4' => new Puissance4Handler(),
-            'bataille_navale' => new BatailleNavaleHandler()
-];
+            'bataille_navale' => new BatailleNavaleHandler(),
+            'pong' => new PongHandler() // Ajout du Handler Pong
+        ];
+        
+        // Boucle de jeu pour Pong, s'exécute environ 60 fois par seconde
+        Loop::addPeriodicTimer(1/60, function() {
+            if (isset($this->gameHandlers['pong'])) {
+                $this->gameHandlers['pong']->tick();
+            }
+        });
+        
         echo "Serveur GamePortal initialisé avec les gestionnaires de jeux.\n";
     }
 

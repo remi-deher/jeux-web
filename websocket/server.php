@@ -21,16 +21,26 @@ spl_autoload_register(function ($class) {
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
-use WebSocket\GamePortal; // On importe notre classe principale
+use WebSocket\GamePortal;
+use React\EventLoop\Loop; // Assurez-vous que cette ligne est présente
 
-// --- LANCEMENT DU SERVEUR ---
-$server = IoServer::factory(
+// --- LANCEMENT DU SERVEUR (VERSION CORRIGÉE) ---
+
+// 1. On récupère la boucle d'événements globale
+$loop = Loop::get();
+
+// 2. On passe la boucle à notre application de jeu
+$gamePortal = new GamePortal($loop);
+
+// 3. On construit le serveur
+$server = new IoServer(
     new HttpServer(
         new WsServer(
-            new GamePortal()
+            $gamePortal
         )
     ),
-    8095
+    new \React\Socket\SocketServer('0.0.0.0:8095', [], $loop), // On passe aussi la boucle au serveur socket
+    $loop
 );
 
 echo "Serveur WebSocket démarré sur le port 8095\n";

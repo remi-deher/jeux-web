@@ -814,3 +814,22 @@ footer {
     color: var(--primary-color);
     text-decoration: underline;
 }
+
+/* --- Styles spécifiques au jeu Pong --- */
+#pong-game-vue {
+    text-align: center;
+    width: 100%;
+}
+#pong-game-vue .scores {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-around;
+}
+#pong-game-vue canvas {
+    background-color: #000;
+    border: 2px solid var(--secondary-color);
+    max-width: 100%;
+    height: auto;
+}
